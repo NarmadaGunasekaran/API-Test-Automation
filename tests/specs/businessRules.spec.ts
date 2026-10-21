@@ -24,13 +24,13 @@ test('validates the middleware pull request response', () => {
   ).toBe(true);
 });
 
-test('reports a pull request count mismatch', () => {
+test('validate reports a pull request count mismatch', () => {
   expect(() => validator.validate(countMismatchResponse)).toThrow(
     'Pull request count mismatch: expected 2, received 1',
   );
 });
 
-test('reports a high-priority draft pull request', () => {
+test('validate reports a high-priority draft pull request', () => {
   expect(() => validator.validate(highPriorityDraftResponse)).toThrow(
     'High-priority pull request 1024 must not be marked as draft',
   );

@@ -19,6 +19,12 @@ pipeline {
             }
         }
 
+        stage('Lint') {
+            steps {
+                sh 'npm run lint'
+            }
+        }
+
         stage('Deterministic Tests') {
             steps {
                 sh 'PLAYWRIGHT_JUNIT_OUTPUT_FILE=test-results/deterministic-junit.xml npm run test:deterministic'

@@ -1,5 +1,5 @@
 {
-  "name": "github-pull-request-tests",
+  "name": "pull-request-validation-suite",
   "version": "1.0.0",
   "private": true,
   "scripts": {
@@ -8,12 +8,16 @@
     "test:live": "playwright test --grep @live",
     "test:headed": "playwright test --headed",
     "test:report": "playwright show-report",
+    "lint": "eslint . --max-warnings=0",
     "typecheck": "tsc --noEmit"
   },
   "devDependencies": {
+    "@eslint/js": "^10.0.1",
     "@playwright/test": "^1.64.1",
     "@types/node": "^24.19.2",
-    "typescript": "^5.9.3"
+    "eslint": "^10.13.0",
+    "typescript": "^5.9.3",
+    "typescript-eslint": "^8.72.0"
   },
   "dependencies": {
     "zod": "^4.6.7"

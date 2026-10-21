@@ -29,6 +29,9 @@ jobs:
       - name: Check TypeScript
         run: npm run typecheck
 
+      - name: Run ESLint
+        run: npm run lint
+
       - name: Run deterministic tests
         run: npm run test:deterministic
         env:
