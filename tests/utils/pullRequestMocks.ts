@@ -31,3 +31,36 @@ export function createPaginatedPullRequestsApi() {
     },
   });
 }
+
+export function createEmptyPullRequestsApi() {
+  return createMockApi({
+    [firstPageUrl]: {
+      body: [],
+    },
+  });
+}
+
+export function createInvalidPullRequestsApi() {
+  return createMockApi({
+    [firstPageUrl]: {
+      body: [
+        {
+          ...pullRequest(1),
+          draft: 'false',
+        },
+      ],
+    },
+  });
+}
+
+export function createFailedPullRequestsApi() {
+  return createMockApi({
+    [firstPageUrl]: {
+      body: {
+        message: 'Internal Server Error',
+      },
+      status: 500,
+      statusText: 'Internal Server Error',
+    },
+  });
+}

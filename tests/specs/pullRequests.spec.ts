@@ -1,27 +1,66 @@
 import { expect, test } from '@playwright/test';
 
 import { GitHubPullRequestsPage } from '../pages/githubPullRequests.page';
-import { createPaginatedPullRequestsApi } from '../utils/pullRequestMocks';
+import {
+  createEmptyPullRequestsApi,
+  createFailedPullRequestsApi,
+  createInvalidPullRequestsApi,
+  createPaginatedPullRequestsApi,
+} from '../utils/pullRequestMocks';
 
 test('counts every open non-draft pull request', async ({ request }) => {
-  const githubPullRequests = new GitHubPullRequestsPage(request);
-  const openPullRequestData = await githubPullRequests.fetchAllOpenPullRequests();
+  await test.step('returns the count from the live GitHub API', async () => {
+    const githubPullRequests = new GitHubPullRequestsPage(request);
+    const openPullRequestData = await githubPullRequests.fetchAllOpenPullRequests();
 
-  expect(openPullRequestData.pageCount).toBeGreaterThan(0);
-  expect(openPullRequestData.allPullRequests).toHaveLength(
-    openPullRequestData.countablePullRequests.length + openPullRequestData.draftCount,
-  );
-  expect(
-    openPullRequestData.countablePullRequests.every(
-      (pullRequest) => !pullRequest.draft,
-    ),
-  ).toBe(true);
+    expect(openPullRequestData.pageCount).toBeGreaterThan(0);
+    expect(openPullRequestData.allPullRequests).toHaveLength(
+      openPullRequestData.countablePullRequests.length +
+        openPullRequestData.draftCount,
+    );
+    expect(
+      openPullRequestData.countablePullRequests.every(
+        (pullRequest) => !pullRequest.draft,
+      ),
+    ).toBe(true);
 
-  console.log({
-    pagesFetched: openPullRequestData.pageCount,
-    totalOpenPullRequests: openPullRequestData.allPullRequests.length,
-    draftsExcluded: openPullRequestData.draftCount,
-    finalCount: openPullRequestData.countablePullRequests.length,
+    console.log({
+      pagesFetched: openPullRequestData.pageCount,
+      totalOpenPullRequests: openPullRequestData.allPullRequests.length,
+      draftsExcluded: openPullRequestData.draftCount,
+      finalCount: openPullRequestData.countablePullRequests.length,
+    });
+  });
+
+  await test.step('returns zero when GitHub has no open pull requests', async () => {
+    const githubPullRequests = new GitHubPullRequestsPage(
+      createEmptyPullRequestsApi(),
+    );
+    const openPullRequestData = await githubPullRequests.fetchAllOpenPullRequests();
+
+    expect(openPullRequestData.allPullRequests).toHaveLength(0);
+    expect(openPullRequestData.countablePullRequests).toHaveLength(0);
+    expect(openPullRequestData.draftCount).toBe(0);
+  });
+
+  await test.step('does not return a count for an invalid response schema', async () => {
+    const githubPullRequests = new GitHubPullRequestsPage(
+      createInvalidPullRequestsApi(),
+    );
+
+    await expect(githubPullRequests.fetchAllOpenPullRequests()).rejects.toThrow(
+      /schema validation failed on page 1.*draft/i,
+    );
+  });
+
+  await test.step('does not return a count when the GitHub API fails', async () => {
+    const githubPullRequests = new GitHubPullRequestsPage(
+      createFailedPullRequestsApi(),
+    );
+
+    await expect(githubPullRequests.fetchAllOpenPullRequests()).rejects.toThrow(
+      'GitHub request failed on page 1: 500 Internal Server Error',
+    );
   });
 });
 
