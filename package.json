@@ -4,6 +4,8 @@
   "private": true,
   "scripts": {
     "test": "playwright test",
+    "test:deterministic": "playwright test --grep-invert @live",
+    "test:live": "playwright test --grep @live",
     "test:headed": "playwright test --headed",
     "test:report": "playwright show-report",
     "typecheck": "tsc --noEmit"

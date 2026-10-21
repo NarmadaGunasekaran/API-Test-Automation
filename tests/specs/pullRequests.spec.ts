@@ -8,7 +8,7 @@ import {
   createPaginatedPullRequestsApi,
 } from '../utils/pullRequestMocks';
 
-test('counts every open non-draft pull request', async ({ request }) => {
+test('@live counts every open non-draft pull request', async ({ request }) => {
   await test.step('returns the count from the live GitHub API', async () => {
     const githubPullRequests = new GitHubPullRequestsPage(request);
     const openPullRequestData = await githubPullRequests.fetchAllOpenPullRequests();
