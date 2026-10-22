@@ -3,7 +3,7 @@ import { expect, test } from '@playwright/test';
 import { GitHubPullRequestsPage } from '../pages/githubPullRequests.page';
 
 
-test('verify open non-draft pull request count', async ({ request }) => {
+test('verify open non-draft pull request count', { tag: '@live' }, async ({ request }) => {
   const githubPullRequests = new GitHubPullRequestsPage(request);
   const openPullRequestData = await githubPullRequests.fetchAllOpenPullRequests();
   const pageCount = githubPullRequests.getPageCount(openPullRequestData);
