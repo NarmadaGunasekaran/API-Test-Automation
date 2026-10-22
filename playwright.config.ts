@@ -13,9 +13,9 @@ export default defineConfig({
   ],
   use: {
     baseURL: 'https://api.github.com',
-    extraHTTPHeaders: {
-      Accept: 'application/vnd.github+json',
-      'X-GitHub-Api-Version': '2022-11-28',
-    },
+    // extraHTTPHeaders: {
+    //   Accept: 'application/vnd.github+json',
+    //   'X-GitHub-Api-Version': '2022-11-28',
+    // },
   },
 });

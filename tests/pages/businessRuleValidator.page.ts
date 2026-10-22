@@ -4,18 +4,11 @@ import {
 } from '../utils/middlewareResponse.schema';
 
 export class BusinessRuleValidatorPage {
-  validate(unvalidatedResponse: unknown): MiddlewareResponse {
-    const pullRequestData = middlewareResponseSchema.parse(
-      unvalidatedResponse,
-    );
-
-    this.validateCount(pullRequestData);
-    this.validateHighPriorityPullRequests(pullRequestData);
-
-    return pullRequestData;
+  parseMiddlewareResponse(response: unknown): MiddlewareResponse {
+    return middlewareResponseSchema.parse(response);
   }
 
-  private validateCount(pullRequestData: MiddlewareResponse): void {
+  validatePullRequestCount(pullRequestData: MiddlewareResponse): void {
     const expectedCount = pullRequestData.total_open_prs;
     const actualCount = pullRequestData.pull_requests.length;
 
@@ -26,7 +19,7 @@ export class BusinessRuleValidatorPage {
     }
   }
 
-  private validateHighPriorityPullRequests(
+  validateHighPriorityPullRequests(
     pullRequestData: MiddlewareResponse,
   ): void {
     const invalidPullRequest = pullRequestData.pull_requests.find(

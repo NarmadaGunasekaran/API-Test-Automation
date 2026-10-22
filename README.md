@@ -1,10 +1,10 @@
 # Pull Request API Test Automation
 
-This is a small Playwright and TypeScript suite for checking pull request data. It covers a live GitHub endpoint and a fixed middleware response with product-specific rules. The tests use Playwright's API client only, so no browser installation is needed.
+This is a Playwright and TypeScript suite for checking pull request data. It covers a live GitHub endpoint and a fixed middleware response with product-specific rules. The tests use Playwright's API client only, so no browser installation is needed.
 
 ## What is covered
 
-The live check reads open pull requests from `appwrite/appwrite`, follows every page, validates each response, and leaves drafts out of the final count.
+The live check reads open pull requests from `appwrite/appwrite`, follows every page, validates each response, and reports the count of non-draft pull requests. It also verifies that every fetched open pull request is counted as either a draft or a non-draft.
 
 The middleware checks cover two rules:
 
@@ -34,9 +34,9 @@ npm ci
 ## Running the checks
 
 ```bash
-npm test                    # complete suite
-npm run typecheck          # TypeScript validation
-npm run lint               # ESLint static checks
+npm test             # complete suite
+npm run typecheck    # TypeScript validation
+npm run lint         # ESLint static checks
 ```
 
 After a test run, the HTML report can be opened with:
@@ -53,7 +53,7 @@ The GitHub request asks for 100 items per page. Pagination follows the URL marke
 
 Every GitHub page is validated before its entries are added to the result. The schema includes the fields used for filtering and diagnostics and requires the PR state to be `open`. Additional fields returned by GitHub are allowed because they are outside the rules being tested.
 
-An empty array is a valid response and produces a count of zero. A non-successful HTTP response or invalid schema fails the test before a count is reported. Errors include the page number and, for HTTP failures, the response status.
+An empty array is a valid response and produces a count of zero. A non-successful HTTP response or invalid schema fails the test before a count is reported. HTTP failures include the response status; schema failures include the validation issues. A repeated pagination URL fails with a pagination-loop error.
 
 The middleware payload is schema-validated before its business rules run. Count mismatches and high-priority drafts have separate messages that identify the failed rule and relevant values.
 
@@ -67,5 +67,5 @@ The `Jenkinsfile` runs the same install, type-check, lint and test commands. Jen
 
 - The live total is not hard-coded because pull requests can be opened, closed or converted to drafts at any time.
 - A GitHub outage, rate-limit response or unexpected contract change is treated as a failed monitoring check rather than retried or ignored.
-- The supplied middleware payload is local test data; no middleware endpoint was provided.
+- The supplied middleware payload is local test data, no middleware endpoint was provided.
 - The schemas validate the fields needed by these rules rather than attempting to reproduce GitHub's entire API schema.

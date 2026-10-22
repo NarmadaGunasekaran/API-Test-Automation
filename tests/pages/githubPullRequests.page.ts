@@ -2,16 +2,14 @@ import type { APIRequestContext, APIResponse } from '@playwright/test';
 
 import { OPEN_PULL_REQUESTS_URL } from '../utils/githubApi.constants';
 import { getNextPageUrl } from '../utils/linkHeader';
-import {pullRequestPageSchema,type PullRequest,} from '../utils/pullRequest.schema';
+import {
+  pullRequestPageSchema,
+  type PullRequest,
+} from '../utils/pullRequest.schema';
 
 export interface PullRequestFetchResult {
   pullRequests: PullRequest[];
   pageCount: number;
-}
-
-interface PullRequestPage {
-  pullRequests: PullRequest[];
-  nextPageUrl: string | null;
 }
 
 export class GitHubPullRequestsPage {
@@ -28,10 +26,12 @@ export class GitHubPullRequestsPage {
       this.checkForPaginationLoop(nextPageUrl, visitedUrls);
       pageCount += 1;
 
-      const page = await this.fetchPullRequestPage(nextPageUrl, pageCount);
-
-      pullRequests.push(...page.pullRequests);
-      nextPageUrl = page.nextPageUrl;
+      const response = await this.request.get(nextPageUrl);
+      this.validateResponseStatus(response);
+      const responseBody: unknown = await response.json();
+      const pullRequest = this.validateResponseSchema(responseBody);
+      pullRequests.push(...pullRequest);
+      nextPageUrl = getNextPageUrl(response.headers().link);
     }
 
     return {
@@ -40,49 +40,29 @@ export class GitHubPullRequestsPage {
     };
   }
 
-  private async fetchPullRequestPage(
-    pageUrl: string,
-    pageNumber: number,
-  ): Promise<PullRequestPage> {
-    const response = await this.request.get(pageUrl);
-
-    this.validateResponseStatus(response, pageNumber);
-
-    const responseBody: unknown = await response.json();
-    const pullRequests = this.validateResponseSchema(responseBody, pageNumber);
-
-    return {
-      pullRequests,
-      nextPageUrl: getNextPageUrl(response.headers().link),
-    };
-  }
 
   private validateResponseStatus(
     response: APIResponse,
-    pageNumber: number,): void {
+  ): void {
     if (!response.ok()) {
       throw new Error(
-        `GitHub request failed on page ${pageNumber}: ${response.status()} ${response.statusText()}`,
+        `GitHub request failed with response status: ${response.status()} ${response.statusText()}`,
       );
     }
   }
 
   private validateResponseSchema(
     responseBody: unknown,
-    pageNumber: number,): PullRequest[] {
+  ): PullRequest[] {
     const validation = pullRequestPageSchema.safeParse(responseBody);
 
-    if (validation.success) {
-      return validation.data;
+    if (!validation.success) {
+      throw new Error(
+        `GitHub response schema validation failed: ${validation.error.issues.map((issue) => `${issue.path.join('.')}: ${issue.message}`).join('; ')}`,
+      );
     }
 
-    const issues = validation.error.issues
-      .map((issue) => `${issue.path.join('.')}: ${issue.message}`)
-      .join('; ');
-
-    throw new Error(
-      `GitHub response schema validation failed on page ${pageNumber}: ${issues}`,
-    );
+    return validation.data;
   }
 
   private checkForPaginationLoop(

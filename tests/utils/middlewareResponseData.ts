@@ -1,4 +1,4 @@
-export const middlewareResponse = {
+export const middlewareResponseData = {
   product_id: 'appwrite-001',
   total_open_prs: 1,
   last_updated: '2024-03-20T15:30:00Z',
