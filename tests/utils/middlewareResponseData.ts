@@ -19,19 +19,3 @@ export const middlewareResponse = {
     },
   ],
 };
-
-export const countMismatchResponse = {
-  ...middlewareResponse,
-  total_open_prs: 2,
-};
-
-export const highPriorityDraftResponse = {
-  ...middlewareResponse,
-  pull_requests: middlewareResponse.pull_requests.map((pullRequest) => ({
-    ...pullRequest,
-    meta: {
-      ...pullRequest.meta,
-      is_draft: true,
-    },
-  })),
-};

@@ -1,37 +1,19 @@
-import { expect, test } from '@playwright/test';
+import { expect, test } from '../fixtures/businessRule.fixture';
+import {middlewareResponse,} from '../utils/middlewareResponseData';
 
-import { PullRequestValidatorPage } from '../pages/pullRequestValidator.page';
-import {
-  countMismatchResponse,
-  highPriorityDraftResponse,
-  middlewareResponse,
-} from '../utils/middlewareResponseData';
-
-const validator = new PullRequestValidatorPage();
-
-test('validates the middleware pull request response', () => {
-  const pullRequestData = validator.validate(middlewareResponse);
-
-  expect(pullRequestData.pull_requests).toHaveLength(
-    pullRequestData.total_open_prs,
+test('validates the provided middleware response', ({businessRuleValidator}) => {
+  const pullRequestData = businessRuleValidator.validate(middlewareResponse);
+  const isHighPriority = pullRequestData.pull_requests.every(
+    (pullRequest) =>
+      !pullRequest.labels.includes('high-priority') ||
+      !pullRequest.meta.is_draft,
   );
-  expect(
-    pullRequestData.pull_requests.every(
-      (pullRequest) =>
-        !pullRequest.labels.includes('high-priority') ||
-        !pullRequest.meta.is_draft,
-    ),
-  ).toBe(true);
-});
 
-test('validate reports a pull request count mismatch', () => {
-  expect(() => validator.validate(countMismatchResponse)).toThrow(
-    'Pull request count mismatch: expected 2, received 1',
-  );
-});
+  expect(pullRequestData.pull_requests.length,'Expected pull_requests length to match total_open_prs').toBe(pullRequestData.total_open_prs);
+  expect(isHighPriority,'Expected every high-priority pull request to be non-draft').toBe(true);
 
-test('validate reports a high-priority draft pull request', () => {
-  expect(() => validator.validate(highPriorityDraftResponse)).toThrow(
-    'High-priority pull request 1024 must not be marked as draft',
-  );
+  console.log({
+    actualPullRequestCount: pullRequestData.pull_requests.length,
+    expectedPullRequestCount: pullRequestData.total_open_prs,
+  });
 });

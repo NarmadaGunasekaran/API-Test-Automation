@@ -25,15 +25,9 @@ pipeline {
             }
         }
 
-        stage('Deterministic Tests') {
+        stage('Playwright Tests') {
             steps {
-                sh 'PLAYWRIGHT_JUNIT_OUTPUT_FILE=test-results/deterministic-junit.xml npm run test:deterministic'
-            }
-        }
-
-        stage('Live GitHub Test') {
-            steps {
-                sh 'PLAYWRIGHT_JUNIT_OUTPUT_FILE=test-results/live-junit.xml npm run test:live'
+                sh 'PLAYWRIGHT_JUNIT_OUTPUT_FILE=test-results/playwright-junit.xml npm test'
             }
         }
     }

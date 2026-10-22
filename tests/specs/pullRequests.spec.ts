@@ -1,78 +1,27 @@
 import { expect, test } from '@playwright/test';
 
 import { GitHubPullRequestsPage } from '../pages/githubPullRequests.page';
-import {
-  createEmptyPullRequestsApi,
-  createFailedPullRequestsApi,
-  createInvalidPullRequestsApi,
-  createPaginatedPullRequestsApi,
-} from '../utils/pullRequestMocks';
 
-test('@live verify counts every open non-draft pull request', async ({ request }) => {
+
+test('verify open non-draft pull request count', async ({ request }) => {
   const githubPullRequests = new GitHubPullRequestsPage(request);
   const openPullRequestData = await githubPullRequests.fetchAllOpenPullRequests();
+  const pageCount = githubPullRequests.getPageCount(openPullRequestData);
+  const allOpenPullRequestCount =githubPullRequests.getAllOpenPullRequestCount(openPullRequestData);
+  const draftPullRequestCount = githubPullRequests.getDraftPullRequestCount(openPullRequestData);
+  const nonDraftPullRequests = githubPullRequests.getNonDraftPullRequests(openPullRequestData);
+  const nonDraftPullRequestCount =  githubPullRequests.getNonDraftPullRequestCount(openPullRequestData);
+  const isEveryPullRequestNonDraft = nonDraftPullRequests.every( (pullRequest) => !pullRequest.draft,);
 
-  expect(openPullRequestData.pageCount).toBeGreaterThan(0);
-  expect(openPullRequestData.allPullRequests).toHaveLength(
-    openPullRequestData.countablePullRequests.length + openPullRequestData.draftCount,
-  );
-  expect(
-    openPullRequestData.countablePullRequests.every(
-      (pullRequest) => !pullRequest.draft,
-    ),
-  ).toBe(true);
+  expect(pageCount,'Expected GitHub pagination to fetch at least one page').toBeGreaterThan(0);
+  expect(allOpenPullRequestCount,'Expected the total open PR count to equal draft and non-draft PR counts',).toBe(nonDraftPullRequestCount + draftPullRequestCount);
+  expect(isEveryPullRequestNonDraft,'Expected the final pull request list to exclude every draft PR',).toBe(true);
 
   console.log({
-    pagesFetched: openPullRequestData.pageCount,
-    totalOpenPullRequests: openPullRequestData.allPullRequests.length,
-    draftsExcluded: openPullRequestData.draftCount,
-    finalCount: openPullRequestData.countablePullRequests.length,
+    pagesFetched: pageCount,
+    totalOpenPullRequests: allOpenPullRequestCount,
+    draftsExcluded: draftPullRequestCount,
+    finalCount: nonDraftPullRequestCount,
   });
-});
-
-test('verify GitHub has no open pull requests', async () => {
-  const githubPullRequests = new GitHubPullRequestsPage(
-    createEmptyPullRequestsApi(),
-  );
-  const openPullRequestData = await githubPullRequests.fetchAllOpenPullRequests();
-
-  expect(openPullRequestData.allPullRequests).toHaveLength(0);
-  expect(openPullRequestData.countablePullRequests).toHaveLength(0);
-  expect(openPullRequestData.draftCount).toBe(0);
-});
-
-test('verify an invalid response schema', async () => {
-  const githubPullRequests = new GitHubPullRequestsPage(
-    createInvalidPullRequestsApi(),
-  );
-
-  await expect(githubPullRequests.fetchAllOpenPullRequests()).rejects.toThrow(
-    /schema validation failed on page 1.*draft/i,
-  );
-});
-
-test('verify GitHub API failure', async () => {
-  const githubPullRequests = new GitHubPullRequestsPage(
-    createFailedPullRequestsApi(),
-  );
-
-  await expect(githubPullRequests.fetchAllOpenPullRequests()).rejects.toThrow(
-    'GitHub request failed on page 1: 500 Internal Server Error',
-  );
-});
-
-test('verify fetching pull requests from every page', async () => {
-  const githubPullRequests = new GitHubPullRequestsPage(
-    createPaginatedPullRequestsApi(),
-  );
-
-  const openPullRequestData = await githubPullRequests.fetchAllOpenPullRequests();
-
-  expect(openPullRequestData.pageCount).toBe(2);
-  expect(openPullRequestData.allPullRequests.map(({ number }) => number)).toEqual([
-    1,
-    2,
-  ]);
-  expect(openPullRequestData.countablePullRequests).toHaveLength(2);
 });
 

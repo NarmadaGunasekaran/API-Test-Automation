@@ -1,6 +1,6 @@
 import { z } from 'zod';
 
-export const pullRequestSchema = z.object({
+const pullRequestSchema = z.object({
   id: z.number(),
   number: z.number(),
   title: z.string(),

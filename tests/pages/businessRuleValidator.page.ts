@@ -3,9 +3,11 @@ import {
   type MiddlewareResponse,
 } from '../utils/middlewareResponse.schema';
 
-export class PullRequestValidatorPage {
-  validate(response: unknown): MiddlewareResponse {
-    const pullRequestData = middlewareResponseSchema.parse(response);
+export class BusinessRuleValidatorPage {
+  validate(unvalidatedResponse: unknown): MiddlewareResponse {
+    const pullRequestData = middlewareResponseSchema.parse(
+      unvalidatedResponse,
+    );
 
     this.validateCount(pullRequestData);
     this.validateHighPriorityPullRequests(pullRequestData);

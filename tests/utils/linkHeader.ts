@@ -1,6 +1,8 @@
-export function getNextPageUrl(linkHeader?: string): string | undefined {
+const noNextPage = null;
+
+export function getNextPageUrl(linkHeader?: string): string | null {
   if (!linkHeader) {
-    return undefined;
+    return noNextPage;
   }
 
   for (const link of linkHeader.split(',')) {
@@ -11,9 +13,9 @@ export function getNextPageUrl(linkHeader?: string): string | undefined {
 
     if (isNextPage) {
       const match = urlPart.trim().match(/^<(.+)>$/);
-      return match?.[1];
+      return match?.[1] ?? noNextPage;
     }
   }
 
-  return undefined;
+  return noNextPage;
 }
