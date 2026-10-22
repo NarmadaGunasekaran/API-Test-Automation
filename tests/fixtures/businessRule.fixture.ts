@@ -1,4 +1,4 @@
-import { expect, test as base } from '@playwright/test';
+import { test as base } from '@playwright/test';
 
 import { BusinessRuleValidatorPage } from '../pages/businessRuleValidator.page';
 
@@ -9,5 +9,3 @@ interface BusinessRuleFixtures {
 export const test = base.extend<BusinessRuleFixtures>({
   businessRuleValidator: new BusinessRuleValidatorPage(),
 });
-
-export { expect };
